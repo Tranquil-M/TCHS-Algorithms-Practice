@@ -18,14 +18,36 @@ get_direction() -> int : Returns the direction the robot is facing as an int. 0:
 '''
 
 # This code serves to display valid syntax for this problem. You may safely delete everything following this except for "grade()"
-def sample():
-    print('\ngrid: ', get_grid())
-    go()
-    tr()
-    go()
-    go()
-    print(get_position())
-sample()
+grid = get_grid()
+direction = get_direction()
+playerX, playerY = get_position()
+coordinates = []
+apple_score = 0
+
+print(playerX, playerY)
+
+def apple_coords(grid):
+    for y, row in enumerate(grid):
+        for x, space in enumerate(row):
+            if space == "o":
+                coordinates.append((x, y))
+    return coordinates
+
+def get_dir(direction):
+    print('Direction is: (', direction, ") 0: North , 1: East , 2: South , 3: West ")
+
+def movement():
+    for coord in coordinates:
+        print((playerX - coord[0]), (playerY - coord[1])) 
+        distX = playerX - coord[0]
+        distY = playerY - coord[1]
+        
+
+
+print(apple_coords(grid))
+get_dir(direction)
+movement()
+
 
 # Your algorithm must end with a call to grade().
 # Calling grade() will halt execution and print your score.
