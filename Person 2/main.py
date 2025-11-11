@@ -104,8 +104,6 @@ def main():
         print(f"Current X: {current_x}")
         print(f"Current Y: {current_y}")
 
-        
-        
 # Your algorithm must end with a call to grade().
 # Calling grade() will halt execution and print your score.
 # You may call grade() at any point, but note that no operations will succeed after grade() is called.
