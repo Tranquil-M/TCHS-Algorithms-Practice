@@ -1,6 +1,6 @@
 # Editing these imports may result in an invalid solution.
 from tester import test, move_forwards, turn_right, turn_left, go, tl, tr, grade, get_position, get_direction, get_grid
-import math
+import math 
 
 # Select the difficulty of the tester from 0 to 2.
 SELECT_DIFFICULTY = 0
@@ -23,6 +23,7 @@ def apple_coords(grid) -> list:
         for x, space in enumerate(row):
             if space == "o":
                 coordinates.append((x, y))
+    
 
     return coordinates
 
@@ -36,9 +37,11 @@ def find_closest_apple(apple_coordinates, x, y) -> tuple:
         dy_squared = (y2 - y)**2
         distance = math.sqrt(dx_squared + dy_squared)
         apple_mag_distances[apple] = distance
+        
 
-    lowest_mag = sorted(apple_mag_distances.items())[1]
+    lowest_mag = sorted(apple_mag_distances.items())[0]
     closest_apple: tuple = lowest_mag[0]
+    print('apple mag dist: ', apple_mag_distances)
     return closest_apple
 
 def find_direction_to_move(apple_coordinate, player_coordinates) -> list:
@@ -60,6 +63,27 @@ def find_direction_to_move(apple_coordinate, player_coordinates) -> list:
     direction: list = [direction_x_quantity, direction_y_quantity]
     return direction
 
+def face_correct_dir(target_dir):
+    while True:
+        current_dir = get_direction()
+        if current_dir == target_dir:
+            break
+        turn_left()  
+    return "facing right way"
+
+
+def movement(PlayerX, PlayerY, apple_coords,move_dir):
+    appleX, appleY = apple_coords
+    face_correct_dir(move_dir[0][0])
+    for i in range(move_dir[0][1]):
+        move_forwards()
+
+    face_correct_dir(move_dir[1][0])
+    for i in range(move_dir[1][1]):
+        move_forwards()
+
+
+
 def main():
     while True:
         current_x, current_y = get_position()
@@ -67,10 +91,12 @@ def main():
         grid = get_grid()
         apple_coordinates = apple_coords(grid)
         if not len(apple_coordinates):
+            movement(current_x, current_y,(5,5), find_direction_to_move( (5,5), (current_x, current_y) ))
             break
 
         closest_apple = find_closest_apple(apple_coordinates, current_x, current_y)
         move_direction = find_direction_to_move(closest_apple, (current_x, current_y))
+        movement(current_x, current_y, closest_apple, move_direction)
         print(f"Apple Coordinates: {apple_coordinates}")
         print(f"Closest Apple: {closest_apple}")
         print(f"Move Direction: {move_direction}")
@@ -78,6 +104,8 @@ def main():
         print(f"Current X: {current_x}")
         print(f"Current Y: {current_y}")
 
+        
+        
 # Your algorithm must end with a call to grade().
 # Calling grade() will halt execution and print your score.
 # You may call grade() at any point, but note that no operations will succeed after grade() is called.
