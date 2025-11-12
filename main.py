@@ -10,7 +10,7 @@ from tester import (
 )
 import heapq
 
-SELECT_DIFFICULTY = 0
+SELECT_DIFFICULTY = 3
 test(SELECT_DIFFICULTY)
 
 
