@@ -8,6 +8,7 @@ if __name__ == "__main__":
 # Test generator and validator
 import random
 import copy
+from time import sleep
 from collections import deque
 
 DIFFICULTY : int = 0
@@ -19,16 +20,14 @@ def get_grid() -> list:
 
 OBSTACLE_COUNT_BY_DIFFICULTY = (0,1,8,16)
 def generate_grid() -> list:
-    new_grid = [['.' for i in range(6)] for j in range(6)]
+    new_grid = [["x" if i == 5 and j == 5 else "." for i in range(6)] for j in range(6)]
 
     fruit_positions = [1,2,3,4,5,10,11,12,13,14,15,20,21,22,23,24,25,30,31,32,33,34,35,40,41,42,43,44,45,50,51,52,53,54]
     while (DIFFICULTY >= 1):
-        new_grid = [['.' for i in range(6)] for j in range(6)]
-
-        for i in range(OBSTACLE_COUNT_BY_DIFFICULTY[DIFFICULTY]):
+        for _ in range(OBSTACLE_COUNT_BY_DIFFICULTY[DIFFICULTY]):
             new_obstacle = [random.randint(0,5),random.randint(0,5)]
             if new_obstacle[0] * 10 + new_obstacle[1] not in (0, 55): # invalid places (start and end)
-                new_grid[new_obstacle[0]][new_obstacle[1]] = '#'
+                new_grid[new_obstacle[0]][new_obstacle[1]] = "#"
 
         # BFS to find a valid path to the end
         opts = [-10,10,1,-1]
@@ -86,8 +85,9 @@ def test(diff : int = 0):
     redraw()
 
 debug_buffer = []
+auto = False
 def redraw():
-    global halt, debug_buffer
+    global halt, debug_buffer, auto
 
     print("\n" * 2) # console clear that doesn't delete history
 
@@ -105,10 +105,14 @@ def redraw():
     debug_buffer = []
 
     print(print_output)
-    if halt:
-        i =input("Press enter to continue, or type 'skip' to skip to the end of execution")
+    if auto:
+        sleep(0.1)
+    elif halt:
+        i =input("Press enter to continue, type 'auto' to automatically play, or type 'skip' to skip to the end of execution.\n")
         if i.lower() in ("skip", "s"):
             halt = False
+        if i.lower() in ("automatic", "auto"):
+            auto = True
 
 MOVEMENT_VECTORS = [(0,-1),(1,0),(0,1),(-1,0)]
 def move_forwards():
@@ -129,6 +133,7 @@ def move_forwards():
                 grid[position_y][position_x] = '.'
 
     redraw()
+
 def turn_right():
     global direction, step
     direction = (direction + 1) % 4
@@ -145,8 +150,7 @@ tl = turn_left
 
 def grade():
     # kill the program
-    print()
-    print("Algorithm Terminated!")
+    print("\nAlgorithm Terminated!")
     did_win = position_x+position_y == 10
     print("Your robot reached the exit!" if did_win else "Your robot failed to reach the exit.")
     score = (3 if did_win else 0) + fruits + (4 * DIFFICULTY if did_win else 0)

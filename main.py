@@ -1,39 +1,70 @@
 from tester import (
-    test, move_forwards, turn_right, turn_left, go, tl, tr, grade,
-    get_position, get_direction, get_grid
+    test,
+    move_forwards,
+    turn_right,
+    turn_left,
+    grade,
+    get_position,
+    get_direction,
+    get_grid,
 )
+import heapq
 
 SELECT_DIFFICULTY = 0
 test(SELECT_DIFFICULTY)
 
-def apple_coords(grid) -> list:
-    return [(x, y) for y, row in enumerate(grid) for x, space in enumerate(row) if space == "o"]
 
-def find_closest_apple(apple_coordinates, x, y) -> tuple:
-    if not apple_coordinates:
-        return None
-    return min(apple_coordinates, key=lambda a: abs(a[0] - x) + abs(a[1] - y))
+def apple_coords(grid):
+    return [(x, y) for y, row in enumerate(grid) for x, c in enumerate(row) if c == "o"]
 
-def find_direction_to_move(apple_coordinate, player_coordinates) -> list:
-    apple_x, apple_y = apple_coordinate
-    player_x, player_y = player_coordinates
-    change_in_x = apple_x - player_x
-    change_in_y = apple_y - player_y
-    
-    directions = []
-    if change_in_x != 0:
-        directions.append((1 if change_in_x > 0 else 3, abs(change_in_x)))
-    if change_in_y != 0:
-        directions.append((2 if change_in_y > 0 else 0, abs(change_in_y)))
-    return directions
+
+def neighbors(x, y, grid):
+    offsets = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    valid_neighbors = []
+    for dir_x, dir_y in offsets:
+        actual_x, actual_y = x + dir_x, y + dir_y
+        if (
+            0 <= actual_y < len(grid)
+            and 0 <= actual_x < len(grid[0])
+            and grid[actual_y][actual_x] != "#"
+        ):
+            valid_neighbors.append((actual_x, actual_y))
+    return valid_neighbors
+
+
+def heuristic(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+
+def astar(grid, start, goal):
+    open_set = []
+    heapq.heappush(open_set, (0, start))
+    came_from = {}
+    g_score = {start: 0}
+
+    while open_set:
+        _, current = heapq.heappop(open_set)
+        if current == goal:
+            path = []
+            while current in came_from:
+                path.append(current)
+                current = came_from[current]
+            path.reverse()
+            return path
+
+        for n in neighbors(*current, grid):
+            temp_g = g_score[current] + 1
+            if temp_g < g_score.get(n, float("inf")):
+                came_from[n] = current
+                g_score[n] = temp_g
+                f = temp_g + heuristic(n, goal)
+                heapq.heappush(open_set, (f, n))
+
 
 def face_correct_dir(target_dir):
     current_dir = get_direction()
     diff = (target_dir - current_dir) % 4
-    
-    if diff == 0:
-        return
-    elif diff == 1:
+    if diff == 1:
         turn_right()
     elif diff == 2:
         turn_right()
@@ -41,40 +72,40 @@ def face_correct_dir(target_dir):
     elif diff == 3:
         turn_left()
 
-    return
 
-def movement(move_dir):
-    for direction, steps in move_dir:
-        face_correct_dir(direction)
-        for _ in range(steps):
-            move_forwards()
+def move_toward_path(path):
+    for next_x, next_y in path:
+        player_x, player_y = get_position()
+        horizontal_dir, vertical_dir = next_x - player_x, next_y - player_y
+        if horizontal_dir == 1:
+            face_correct_dir(1)
+        elif horizontal_dir == -1:
+            face_correct_dir(3)
+        elif vertical_dir == 1:
+            face_correct_dir(2)
+        elif vertical_dir == -1:
+            face_correct_dir(0)
+        move_forwards()
 
-def main(debug: bool = False):
+
+def main():
     while True:
-        current_x, current_y = get_position()
+        x, y = get_position()
         grid = get_grid()
         apples = apple_coords(grid)
-
         if not apples:
-            target = (5, 5)
-            move_dir = find_direction_to_move(target, (current_x, current_y))
-            movement(move_dir)
+            path = astar(grid, (x, y), (5, 5))
+            move_toward_path(path)
             break
-
-        closest_apple = find_closest_apple(apples, current_x, current_y)
-        move_dir = find_direction_to_move(closest_apple, (current_x, current_y))
-        movement(move_dir)
-
-        if debug:
-            print(f"Apples: {apples}", flush=True)
-            print(f"Closest Apple: {closest_apple}", flush=True)
-            print(f"Move Direction: {move_dir}", flush=True)
-            print(f"Position: ({current_x}, {current_y})", flush=True)
-            print(f"Direction: {get_direction()}", flush=True)
+        apples.sort(key=lambda a: (heuristic((x, y), a)))
+        target = apples[0]
+        path = astar(grid, (x, y), target)
+        if not path:
+            break
+        move_toward_path(path)
 
     grade()
 
 
 if __name__ == "__main__":
-    main(debug=True)
-    #I don't know why but debug doesn't seem to work?? It might because of the way tester handles prints
+    main()
