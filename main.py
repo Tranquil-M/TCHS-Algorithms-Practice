@@ -149,10 +149,13 @@ def main():
             move_toward_path(path)
             break
 
-        target = min(
-            apples,
-            key=lambda a: convenience_cost(grid, (x, y), get_direction(), a),
-        )
+        # I'm actually not entirely sure if weighted pathfinding made a difference here, but I kept it just in case.
+        # target = min(
+        #     apples,
+        #     key=lambda a: convenience_cost(grid, (x, y), get_direction(), a),
+        # )
+
+        target = min(apples, key=lambda a: heuristic((x, y), a))
 
         path = bfs(grid, (x, y), target)
         if not path:
