@@ -119,7 +119,7 @@ def main():
             path = bfs(grid, (x, y), (5, 5))
             move_toward_path(path)
             break
-        apples.sort(key=lambda a: (heuristic((x, y), a)))
+        apples.sort(key=lambda a: (heuristic((5, 5), a)), reverse=True)
         target = apples[0]
         path = bfs(grid, (x, y), target)
         if not path:
