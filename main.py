@@ -9,6 +9,7 @@ from tester import (
     get_grid,
 )
 import heapq
+from collections import deque
 
 SELECT_DIFFICULTY = 3
 test(SELECT_DIFFICULTY)
@@ -61,6 +62,27 @@ def astar(grid, start, goal):
                 heapq.heappush(open_set, (f, n))
 
 
+def bfs(grid, start, goal):
+    queue = deque([start])
+    came_from = {start: None}
+
+    while queue:
+        current = queue.popleft()
+
+        if current == goal:
+            path = []
+            while current in came_from and came_from[current] is not None:
+                path.append(current)
+                current = came_from[current]
+            path.reverse()
+            return path
+
+        for n in neighbors(*current, grid):
+            if n not in came_from:
+                came_from[n] = current
+                queue.append(n)
+
+
 def face_correct_dir(target_dir):
     current_dir = get_direction()
     diff = (target_dir - current_dir) % 4
@@ -94,12 +116,12 @@ def main():
         grid = get_grid()
         apples = apple_coords(grid)
         if not apples:
-            path = astar(grid, (x, y), (5, 5))
+            path = bfs(grid, (x, y), (5, 5))
             move_toward_path(path)
             break
         apples.sort(key=lambda a: (heuristic((x, y), a)))
         target = apples[0]
-        path = astar(grid, (x, y), target)
+        path = bfs(grid, (x, y), target)
         if not path:
             break
         move_toward_path(path)
