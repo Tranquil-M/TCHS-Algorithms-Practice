@@ -111,34 +111,6 @@ def move_toward_path(path):
         move_forwards()
 
 
-def turns_needed(start_dir, from_pos, to_pos):
-    dx = to_pos[0] - from_pos[0]
-    dy = to_pos[1] - from_pos[1]
-
-    if dx == 1:
-        desired_dir = 1
-    elif dx == -1:
-        desired_dir = 3
-    elif dy == 1:
-        desired_dir = 2
-    else:
-        desired_dir = 0
-
-    return (desired_dir - start_dir) % 4
-
-
-def convenience_cost(grid, start, start_dir, goal):
-    path = astar(grid, start, goal)
-    if not path:
-        return float("inf")
-
-    first_step = path[0]
-    turn_cost = turns_needed(start_dir, start, first_step)
-    step_cost = len(path)
-
-    return turn_cost + step_cost
-
-
 def main():
     while True:
         x, y = get_position()
@@ -148,12 +120,6 @@ def main():
             path = bfs(grid, (x, y), (5, 5))
             move_toward_path(path)
             break
-
-        # I'm actually not entirely sure if weighted pathfinding made a difference here, but I kept it just in case.
-        # target = min(
-        #     apples,
-        #     key=lambda a: convenience_cost(grid, (x, y), get_direction(), a),
-        # )
 
         target = min(apples, key=lambda a: heuristic((x, y), a))
 
